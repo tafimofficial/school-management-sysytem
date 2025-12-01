@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings - SMS{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Settings</h1>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">General Settings</h6>
+    </div>
+    <div class="card-body">
+        <p>System settings will be implemented here.</p>
+        <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="darkModeSwitch">
+            <label class="form-check-label" for="darkModeSwitch">Dark Mode</label>
+        </div>
+        <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="notificationsSwitch" checked>
+            <label class="form-check-label" for="notificationsSwitch">Enable Notifications</label>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Assign Teacher - SMS{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Assign Teacher</h1>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Assignment Details</h6>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label for="{{ form.teacher.id_for_label }}" class="form-label">Teacher</label>
+                {{ form.teacher }}
+                {% if form.teacher.errors %}
+                <div class="text-danger small">{{ form.teacher.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.subject.id_for_label }}" class="form-label">Subject</label>
+                {{ form.subject }}
+                {% if form.subject.errors %}
+                <div class="text-danger small">{{ form.subject.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.section.id_for_label }}" class="form-label">Section</label>
+                {{ form.section }}
+                {% if form.section.errors %}
+                <div class="text-danger small">{{ form.section.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.academic_year.id_for_label }}" class="form-label">Academic Year</label>
+                {{ form.academic_year }}
+                {% if form.academic_year.errors %}
+                <div class="text-danger small">{{ form.academic_year.errors }}</div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary">Assign Teacher</button>
+            <a href="{% url 'class_list' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

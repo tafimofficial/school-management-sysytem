@@ -1,0 +1,141 @@
+{% extends 'public_base.html' %}
+
+{% block title %}Welcome to EduSmart - School Management System{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section d-flex align-items-center" style="min-height: 100vh;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6" data-aos="fade-right">
+                <h1 class="display-3 fw-bold mb-4">Manage Your School With <span class="text-warning">Confidence</span></h1>
+                <p class="lead mb-5 opacity-75">Streamline administration, enhance learning, and foster communication with our all-in-one cloud-based school management platform.</p>
+                <div class="d-flex gap-3">
+                    <a href="#" class="btn btn-primary-custom shadow-lg">Get Started</a>
+                    <a href="#" class="btn btn-outline-custom">Learn More</a>
+                </div>
+            </div>
+            <div class="col-lg-6 mt-5 mt-lg-0" data-aos="fade-left">
+                <img src="https://img.freepik.com/free-vector/education-technology-futuristic-background-vector-gradient-blue_53876-112068.jpg" alt="School Management" class="img-fluid rounded-4 shadow-lg floating-animation">
+            </div>
+        </div>
+    </div>
+    <div class="hero-shape">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+            <path fill="#f8f9fc" fill-opacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+        </svg>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row text-center g-4">
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="p-4 bg-white rounded-4 shadow-sm h-100">
+                    <h2 class="display-4 fw-bold text-primary mb-0">50+</h2>
+                    <p class="text-muted">Schools</p>
+                </div>
+            </div>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="p-4 bg-white rounded-4 shadow-sm h-100">
+                    <h2 class="display-4 fw-bold text-success mb-0">10k+</h2>
+                    <p class="text-muted">Students</p>
+                </div>
+            </div>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="p-4 bg-white rounded-4 shadow-sm h-100">
+                    <h2 class="display-4 fw-bold text-info mb-0">500+</h2>
+                    <p class="text-muted">Teachers</p>
+                </div>
+            </div>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="400">
+                <div class="p-4 bg-white rounded-4 shadow-sm h-100">
+                    <h2 class="display-4 fw-bold text-warning mb-0">99%</h2>
+                    <p class="text-muted">Satisfaction</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h6 class="text-primary fw-bold text-uppercase ls-2">Features</h6>
+            <h2 class="fw-bold display-5">Everything You Need</h2>
+            <p class="text-muted lead">Comprehensive tools to manage your educational institution.</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-card p-4 bg-white h-100 text-center border">
+                    <div class="icon-box mb-4 text-primary">
+                        <i class="fas fa-user-graduate fa-3x"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Student Management</h4>
+                    <p class="text-muted">Complete lifecycle management from admission to alumni. Track academic progress and personal details.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-card p-4 bg-white h-100 text-center border">
+                    <div class="icon-box mb-4 text-success">
+                        <i class="fas fa-chalkboard-teacher fa-3x"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Academic Planning</h4>
+                    <p class="text-muted">Manage classes, sections, subjects, and timetables efficiently. Streamline curriculum delivery.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-card p-4 bg-white h-100 text-center border">
+                    <div class="icon-box mb-4 text-info">
+                        <i class="fas fa-calendar-check fa-3x"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Attendance Tracking</h4>
+                    <p class="text-muted">Digital attendance for students and staff. Automated reports and absentee notifications.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="400">
+                <div class="feature-card p-4 bg-white h-100 text-center border">
+                    <div class="icon-box mb-4 text-warning">
+                        <i class="fas fa-file-invoice-dollar fa-3x"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Finance & Fees</h4>
+                    <p class="text-muted">Automated fee collection, invoicing, and expense tracking. Financial health at a glance.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="500">
+                <div class="feature-card p-4 bg-white h-100 text-center border">
+                    <div class="icon-box mb-4 text-danger">
+                        <i class="fas fa-chart-line fa-3x"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Reports & Analytics</h4>
+                    <p class="text-muted">Data-driven insights for better decision making. Customizable reports for all modules.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="600">
+                <div class="feature-card p-4 bg-white h-100 text-center border">
+                    <div class="icon-box mb-4 text-dark">
+                        <i class="fas fa-mobile-alt fa-3x"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Mobile Ready</h4>
+                    <p class="text-muted">Responsive design that works seamlessly on all devices. Access your school anywhere.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .floating-animation {
+        animation: float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+        100% { transform: translateY(0px); }
+    }
+    .ls-2 { letter-spacing: 2px; }
+</style>
+{% endblock %}

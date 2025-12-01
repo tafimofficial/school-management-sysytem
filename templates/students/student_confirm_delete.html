@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Student - SMS{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Delete Student</h1>
+</div>
+
+<div class="card shadow mb-4 border-left-danger">
+    <div class="card-body">
+        <h4 class="text-danger">Are you sure?</h4>
+        <p>You are about to delete the student <strong>{{ student.user.get_full_name }}</strong> ({{ student.admission_number }}). This action cannot be undone.</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Confirm Delete</button>
+            <a href="{% url 'student_list' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

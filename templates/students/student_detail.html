@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Details - SMS{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Student Details</h1>
+    <div>
+        <a href="{% url 'student_update' student.pk %}" class="d-none d-sm-inline-block btn btn-sm btn-warning shadow-sm">
+            <i class="fas fa-edit fa-sm text-white-50"></i> Edit
+        </a>
+        <a href="{% url 'student_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row" x-data="{ show: true }" x-show="show" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100">
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-body text-center">
+                <img class="img-profile rounded-circle mb-3" src="https://ui-avatars.com/api/?name={{ student.user.get_full_name }}&size=128" width="128" height="128">
+                <h4 class="font-weight-bold">{{ student.user.get_full_name }}</h4>
+                <p class="text-muted">{{ student.admission_number }}</p>
+                <span class="badge bg-primary">{{ student.current_class }} - {{ student.section }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">General Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-3 font-weight-bold">Full Name</div>
+                    <div class="col-sm-9">{{ student.user.get_full_name }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 font-weight-bold">Gender</div>
+                    <div class="col-sm-9">{{ student.get_gender_display }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 font-weight-bold">Date of Birth</div>
+                    <div class="col-sm-9">{{ student.date_of_birth }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 font-weight-bold">Blood Group</div>
+                    <div class="col-sm-9">{{ student.blood_group }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 font-weight-bold">Email</div>
+                    <div class="col-sm-9">{{ student.user.email }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 font-weight-bold">Phone</div>
+                    <div class="col-sm-9">{{ student.phone_number }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 font-weight-bold">Address</div>
+                    <div class="col-sm-9">{{ student.address }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Academic Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-3 font-weight-bold">Admission Date</div>
+                    <div class="col-sm-9">{{ student.admission_date }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 font-weight-bold">Roll Number</div>
+                    <div class="col-sm-9">{{ student.roll_number }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

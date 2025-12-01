@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}School Management System{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #858796;
+            --success-color: #1cc88a;
+            --info-color: #36b9cc;
+            --warning-color: #f6c23e;
+            --danger-color: #e74a3b;
+            --light-color: #f8f9fc;
+            --dark-color: #5a5c69;
+        }
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f8f9fc;
+            overflow-x: hidden;
+        }
+        #wrapper {
+            display: flex;
+            width: 100%;
+            align-items: stretch;
+        }
+        #sidebar-wrapper {
+            min-height: 100vh;
+            width: 250px;
+            background-color: var(--primary-color);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        #sidebar-wrapper .sidebar-heading {
+            padding: 1.5rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #sidebar-wrapper .list-group-item {
+            padding: 1rem 1.5rem;
+            background-color: transparent;
+            color: rgba(255, 255, 255, 0.8);
+            border: none;
+            transition: all 0.2s ease;
+        }
+        #sidebar-wrapper .list-group-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding-left: 2rem;
+        }
+        #sidebar-wrapper .list-group-item.active {
+            background-color: white;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        #page-content-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .navbar {
+            box-shadow: 0 .15rem 1.75rem 0 rgba(58,59,69,.15);
+        }
+        .card {
+            border: none;
+            box-shadow: 0 .15rem 1.75rem 0 rgba(58,59,69,.15);
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        /* Alpine.js Transitions */
+        [x-cloak] { display: none !important; }
+    </style>
+    {% block extra_css %}{% endblock %}
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body x-data="{ sidebarOpen: true }">
+
+    <div id="wrapper" :class="{ 'toggled': !sidebarOpen }">
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper" x-show="sidebarOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform -translate-x-full" x-transition:enter-end="opacity-100 transform translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 transform translate-x-0" x-transition:leave-end="opacity-0 transform -translate-x-full">
+            <div class="sidebar-heading">
+                <i class="fas fa-graduation-cap me-2"></i> SMS
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="{% url 'dashboard' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                </a>
+                {% if user.role == 'SUPER_ADMIN' or user.role == 'SCHOOL_ADMIN' %}
+                <!-- User Management Menu -->
+                <a class="list-group-item list-group-item-action" href="#userSubmenu" data-bs-toggle="collapse" aria-expanded="{% if 'users' in request.path or 'create' in request.path %}true{% else %}false{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-users-cog me-2"></i> User Management</span>
+                        <i class="fas fa-chevron-down fa-xs"></i>
+                    </div>
+                </a>
+
+
+
+                
+                <div class="collapse {% if 'users' in request.path or 'create' in request.path %}show{% endif %}" id="userSubmenu">
+                    <div class="list-group list-group-flush" style="background-color: rgba(0, 0, 0, 0.2);">
+                        <a href="{% url 'user_list' %}" class="list-group-item list-group-item-action border-0 pl-4 {% if 'users' in request.path and not request.GET.role and 'create' not in request.path %}text-white fw-bold{% endif %}">
+                            <i class="fas fa-users me-2"></i> All Users
+                        </a>
+                        <a href="{% url 'user_list' %}?role=TEACHER" class="list-group-item list-group-item-action border-0 pl-4 {% if request.GET.role == 'TEACHER' %}text-white fw-bold{% endif %}">
+                            <i class="fas fa-chalkboard-teacher me-2"></i> Teachers
+                        </a>
+                        <a href="{% url 'user_list' %}?role=STUDENT" class="list-group-item list-group-item-action border-0 pl-4 {% if request.GET.role == 'STUDENT' %}text-white fw-bold{% endif %}">
+                            <i class="fas fa-user-graduate me-2"></i> Students 
+                        </a>
+                        <a href="{% url 'user_create' %}" class="list-group-item list-group-item-action border-0 pl-4 {% if 'create' in request.path %}text-white fw-bold{% endif %}">
+                            <i class="fas fa-user-plus me-2"></i> Add User
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+
+
+
+                {% if user.role == 'SUPER_ADMIN' or user.role == 'SCHOOL_ADMIN' or user.role == 'TEACHER' or user.role == 'ACADEMIC_ADMIN' %}
+                <a href="{% url 'student_list' %}" class="list-group-item list-group-item-action {% if 'students' in request.path %}active{% endif %}">
+                    <i class="fas fa-user-graduate me-2"></i> Students
+                </a>
+                {% endif %}
+
+                {% if user.role == 'SUPER_ADMIN' or user.role == 'SCHOOL_ADMIN' or user.role == 'TEACHER' or user.role == 'ACADEMIC_ADMIN' or user.role == 'STUDENT' %}
+                <a href="{% url 'class_list' %}" class="list-group-item list-group-item-action {% if 'academics' in request.path and 'academic-years' not in request.path %}active{% endif %}">
+                    <i class="fas fa-chalkboard-teacher me-2"></i> Academics
+                </a>
+                <a href="{% url 'academic_year_list' %}" class="list-group-item list-group-item-action {% if 'academic-years' in request.path %}active{% endif %}">
+                    <i class="fas fa-calendar-alt me-2"></i> Academic Years
+                </a>
+                {% endif %}
+
+                <a href="{% url 'attendance_dashboard' %}" class="list-group-item list-group-item-action {% if 'attendance' in request.path %}active{% endif %}">
+                    <i class="fas fa-calendar-check me-2"></i> Attendance
+                </a>
+                
+                <a href="{% url 'exam_list' %}" class="list-group-item list-group-item-action {% if 'examination' in request.path %}active{% endif %}">
+                    <i class="fas fa-file-alt me-2"></i> Examinations
+                </a>
+
+                {% if user.role == 'SUPER_ADMIN' or user.role == 'SCHOOL_ADMIN' or user.role == 'ACCOUNTANT' %}
+                <a href="#" class="list-group-item list-group-item-action">
+                    <i class="fas fa-file-invoice-dollar me-2"></i> Finance
+                </a>
+                {% endif %}
+                <!-- Add more links based on role -->
+            </div>
+        </div>
+        <!-- /#sidebar-wrapper -->
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <nav class="navbar navbar-expand-lg navbar-light bg-white mb-4 static-top">
+                <div class="container-fluid">
+                    <button class="btn btn-link text-primary" @click="sidebarOpen = !sidebarOpen">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="me-2 d-none d-lg-inline text-gray-600 small">{{ user.username }}</span>
+                                <img class="img-profile rounded-circle" src="https://ui-avatars.com/api/?name={{ user.username }}" width="32" height="32">
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i> Profile</a></li>
+                                <li><a class="dropdown-item" href="{% url 'settings' %}"><i class="fas fa-cogs fa-sm fa-fw me-2 text-gray-400"></i> Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'logout' %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i> Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="container-fluid px-4">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+        <!-- /#page-content-wrapper -->
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

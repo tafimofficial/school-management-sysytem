@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Add Class - SMS{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Add Class</h1>
+    <a href="{% url 'class_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+        <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to List
+    </a>
+</div>
+
+<div class="card shadow mb-4" x-data="{ show: true }" x-show="show" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform translate-y-4" x-transition:enter-end="opacity-100 transform translate-y-0">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="{{ form.name.id_for_label }}" class="form-label">Class Name</label>
+                {% render_field form.name class="form-control" placeholder="e.g. Class 1" %}
+                <div class="invalid-feedback">{{ form.name.errors }}</div>
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.numeric_value.id_for_label }}" class="form-label">Numeric Value</label>
+                {% render_field form.numeric_value class="form-control" placeholder="e.g. 1" %}
+                <div class="form-text">Used for sorting classes order.</div>
+                <div class="invalid-feedback">{{ form.numeric_value.errors }}</div>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Class</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

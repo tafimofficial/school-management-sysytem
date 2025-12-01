@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance Dashboard - SMS{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Attendance Dashboard</h1>
+    <div>
+        {% if user.role == 'SUPER_ADMIN' or user.role == 'SCHOOL_ADMIN' or user.role == 'TEACHER' %}
+        <a href="{% url 'mark_attendance' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm me-2">
+            <i class="fas fa-check-circle fa-sm text-white-50"></i> Mark Attendance
+        </a>
+        {% endif %}
+        {% if user.role != 'SUPER_ADMIN' and user.role != 'SCHOOL_ADMIN' %}
+        <a href="{% url 'leave_apply' %}" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm">
+            <i class="fas fa-calendar-plus fa-sm text-white-50"></i> Apply Leave
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <!-- Today's Attendance Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Today's Attendance</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ today_attendance }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Leaves Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Pending Leaves</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_leaves }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-envelope-open-text fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'leave_list' %}" class="btn btn-light btn-icon-split w-100 mb-2 justify-content-start">
+                    <span class="icon text-gray-600">
+                        <i class="fas fa-list"></i>
+                    </span>
+                    <span class="text">View Leave Applications</span>
+                </a>
+                <a href="#" class="btn btn-light btn-icon-split w-100 justify-content-start">
+                    <span class="icon text-gray-600">
+                        <i class="fas fa-chart-bar"></i>
+                    </span>
+                    <span class="text">View Attendance Reports</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

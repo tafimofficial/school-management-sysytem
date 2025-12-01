@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}User Management - SMS{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">User Management</h1>
+    <a href="{% url 'user_create' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+        <i class="fas fa-plus fa-sm text-white-50"></i> Add User
+    </a>
+</div>
+
+<div class="card shadow mb-4" x-data="{ show: true }" x-show="show" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-90" x-transition:enter-end="opacity-100 transform scale-100">
+    <div class="card-header py-3">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <ul class="nav nav-pills">
+                <li class="nav-item">
+                    <a class="nav-link {% if not request.GET.role %}active{% endif %}" href="{% url 'user_list' %}">All</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.GET.role == 'SUPER_ADMIN' %}active{% endif %}" href="?role=SUPER_ADMIN">Admins</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.GET.role == 'TEACHER' %}active{% endif %}" href="?role=TEACHER">Teachers</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.GET.role == 'STUDENT' %}active{% endif %}" href="?role=STUDENT">Students</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.GET.role == 'PARENT' %}active{% endif %}" href="?role=PARENT">Parents</a>
+                </li>
+            </ul>
+            
+            <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" method="get">
+                {% if request.GET.role %}<input type="hidden" name="role" value="{{ request.GET.role }}">{% endif %}
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2" value="{{ request.GET.q|default:'' }}">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="button" onclick="this.form.submit()">
+                            <i class="fas fa-search fa-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr class="hover-row">
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.get_full_name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td><span class="badge bg-info">{{ user.get_role_display }}</span></td>
+                        <td>
+                            {% if user.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'user_update' user.pk %}" class="btn btn-warning btn-sm btn-circle">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'user_delete' user.pk %}" class="btn btn-danger btn-sm btn-circle">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No users found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}">Previous</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Previous</span>
+                </li>
+                {% endif %}
+
+                {% for i in paginator.page_range %}
+                <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+                    <a class="page-link" href="?page={{ i }}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}">{{ i }}</a>
+                </li>
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}">Next</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Next</span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .btn-circle {
+        border-radius: 100%;
+        height: 30px;
+        width: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .hover-row:hover {
+        background-color: #f8f9fc;
+        transition: background-color 0.2s;
+    }
+</style>
+{% endblock %}

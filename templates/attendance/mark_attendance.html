@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}Mark Attendance - SMS{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Mark Attendance</h1>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <form method="post" id="attendanceForm">
+            {% csrf_token %}
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <label class="form-label">Class</label>
+                    <select name="class_id" class="form-select" id="classSelect" required>
+                        <option value="">Select Class</option>
+                        {% for class in classes %}
+                        <option value="{{ class.id }}">{{ class.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Section</label>
+                    <select name="section_id" class="form-select" id="sectionSelect" required>
+                        <option value="">Select Section</option>
+                        <!-- Populated via JS -->
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Date</label>
+                    <input type="date" name="date" class="form-control" value="{% now 'Y-m-d' %}" required>
+                </div>
+            </div>
+
+            <div id="studentList" class="table-responsive" style="display:none;">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Status</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                        <!-- Populated via JS -->
+                    </tbody>
+                </table>
+                <button type="submit" class="btn btn-primary">Save Attendance</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Placeholder for dynamic section and student loading
+    // In a real app, this would use AJAX to fetch sections and students
+    // For now, we'll just show a message or basic functionality
+    
+    document.getElementById('classSelect').addEventListener('change', function() {
+        const classId = this.value;
+        const sectionSelect = document.getElementById('sectionSelect');
+        sectionSelect.innerHTML = '<option value="">Select Section</option>';
+        
+        if (classId) {
+            fetch(`{% url 'get_sections' %}?class_id=${classId}&t=${new Date().getTime()}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Clear again to prevent race conditions from multiple requests
+                    sectionSelect.innerHTML = '<option value="">Select Section</option>';
+                    const seen = new Set();
+                    data.forEach(section => {
+                        // Normalize name for JS deduplication
+                        const normalizedName = section.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                        if (!seen.has(normalizedName)) {
+                            seen.add(normalizedName);
+                            const option = document.createElement('option');
+                            option.value = section.id;
+                            option.textContent = section.name;
+                            sectionSelect.appendChild(option);
+                        }
+                    });
+                });
+        }
+    });
+
+    // Fetch students when section is selected
+    document.getElementById('sectionSelect').addEventListener('change', function() {
+        const sectionId = this.value;
+        const studentList = document.getElementById('studentList');
+        const tbody = document.getElementById('studentTableBody');
+        tbody.innerHTML = ''; // Clear existing rows
+
+        if (sectionId) {
+            fetch(`{% url 'get_students' %}?section_id=${sectionId}&t=${new Date().getTime()}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Clear again to prevent race conditions
+                    tbody.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach(student => {
+                            const row = `
+                                <tr>
+                                    <td>${student.name}</td>
+                                    <td>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="status_${student.id}" value="PRESENT" checked>
+                                            <label class="form-check-label">Present</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="status_${student.id}" value="ABSENT">
+                                            <label class="form-check-label">Absent</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="status_${student.id}" value="LATE">
+                                            <label class="form-check-label">Late</label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control form-control-sm" name="remarks_${student.id}">
+                                    </td>
+                                </tr>
+                            `;
+                            tbody.insertAdjacentHTML('beforeend', row);
+                        });
+                        studentList.style.display = 'block';
+                    } else {
+                        studentList.style.display = 'none';
+                        alert('No students found in this section.');
+                    }
+                });
+        } else {
+            studentList.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

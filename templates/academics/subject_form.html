@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Add Subject - SMS{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Add Subject</h1>
+    <a href="{% url 'subject_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+        <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to List
+    </a>
+</div>
+
+<div class="card shadow mb-4" x-data="{ show: true }" x-show="show" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform translate-y-4" x-transition:enter-end="opacity-100 transform translate-y-0">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="{{ form.name.id_for_label }}" class="form-label">Subject Name</label>
+                {% render_field form.name class="form-control" %}
+                <div class="invalid-feedback">{{ form.name.errors }}</div>
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.code.id_for_label }}" class="form-label">Subject Code</label>
+                {% render_field form.code class="form-control" %}
+                <div class="invalid-feedback">{{ form.code.errors }}</div>
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.classes.id_for_label }}" class="form-label">Applicable Classes</label>
+                {% render_field form.classes class="form-select" multiple="multiple" %}
+                <div class="form-text">Hold Ctrl/Cmd to select multiple classes.</div>
+                <div class="invalid-feedback">{{ form.classes.errors }}</div>
+            </div>
+            <div class="mb-3 form-check">
+                {% render_field form.is_elective class="form-check-input" %}
+                <label class="form-check-label" for="{{ form.is_elective.id_for_label }}">Is Elective?</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Subject</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

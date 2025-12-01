@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{% if form.instance.pk %}Edit{% else %}Add{% endif %} Student - SMS{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">{% if form.instance.pk %}Edit{% else %}Add{% endif %} Student</h1>
+    <a href="{% url 'student_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+        <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to List
+    </a>
+</div>
+
+<div class="card shadow mb-4" x-data="{ show: true }" x-show="show" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform translate-y-4" x-transition:enter-end="opacity-100 transform translate-y-0">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Student Details</h6>
+    </div>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            <h5 class="mb-3">Personal Information</h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                    {% render_field form.first_name class="form-control" %}
+                    <div class="invalid-feedback">{{ form.first_name.errors }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                    {% render_field form.last_name class="form-control" %}
+                    <div class="invalid-feedback">{{ form.last_name.errors }}</div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
+                    {% render_field form.date_of_birth class="form-control" type="date" %}
+                    <div class="invalid-feedback">{{ form.date_of_birth.errors }}</div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.gender.id_for_label }}" class="form-label">Gender</label>
+                    {% render_field form.gender class="form-select" %}
+                    <div class="invalid-feedback">{{ form.gender.errors }}</div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.blood_group.id_for_label }}" class="form-label">Blood Group</label>
+                    {% render_field form.blood_group class="form-control" %}
+                    <div class="invalid-feedback">{{ form.blood_group.errors }}</div>
+                </div>
+            </div>
+
+            <h5 class="mb-3 mt-4">Academic Information</h5>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.admission_number.id_for_label }}" class="form-label">Admission Number</label>
+                    {% render_field form.admission_number class="form-control" %}
+                    <div class="invalid-feedback">{{ form.admission_number.errors }}</div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.admission_date.id_for_label }}" class="form-label">Admission Date</label>
+                    {% render_field form.admission_date class="form-control" type="date" %}
+                    <div class="invalid-feedback">{{ form.admission_date.errors }}</div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.roll_number.id_for_label }}" class="form-label">Roll Number</label>
+                    {% render_field form.roll_number class="form-control" %}
+                    <div class="invalid-feedback">{{ form.roll_number.errors }}</div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.current_class.id_for_label }}" class="form-label">Class</label>
+                    {% render_field form.current_class class="form-control" %}
+                    <div class="invalid-feedback">{{ form.current_class.errors }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.section.id_for_label }}" class="form-label">Section</label>
+                    {% render_field form.section class="form-control" %}
+                    <div class="invalid-feedback">{{ form.section.errors }}</div>
+                </div>
+            </div>
+
+            <h5 class="mb-3 mt-4">Contact Information</h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                    {% render_field form.email class="form-control" %}
+                    <div class="invalid-feedback">{{ form.email.errors }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.phone_number.id_for_label }}" class="form-label">Phone Number</label>
+                    {% render_field form.phone_number class="form-control" %}
+                    <div class="invalid-feedback">{{ form.phone_number.errors }}</div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                {% render_field form.address class="form-control" rows="3" %}
+                <div class="invalid-feedback">{{ form.address.errors }}</div>
+            </div>
+
+            {% if not form.instance.pk %}
+            <h5 class="mb-3 mt-4">Account Setup</h5>
+            <div class="mb-3">
+                <label for="{{ form.password.id_for_label }}" class="form-label">Initial Password</label>
+                {% render_field form.password class="form-control" %}
+                <div class="form-text">Leave blank to use default 'password123'</div>
+            </div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary btn-lg mt-3">
+                <i class="fas fa-save me-2"></i> Save Student
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

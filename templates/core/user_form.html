@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{% if form.instance.pk %}Edit{% else %}Add{% endif %} User - SMS{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">{% if form.instance.pk %}Edit{% else %}Add{% endif %} User</h1>
+    <a href="{% url 'user_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+        <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to List
+    </a>
+</div>
+
+<div class="card shadow mb-4" x-data="{ show: true }" x-show="show" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform translate-y-4" x-transition:enter-end="opacity-100 transform translate-y-0">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                    {% render_field form.username class="form-control" %}
+                    <div class="invalid-feedback">{{ form.username.errors }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                    {% render_field form.email class="form-control" %}
+                    <div class="invalid-feedback">{{ form.email.errors }}</div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                    {% render_field form.first_name class="form-control" %}
+                    <div class="invalid-feedback">{{ form.first_name.errors }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                    {% render_field form.last_name class="form-control" %}
+                    <div class="invalid-feedback">{{ form.last_name.errors }}</div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.role.id_for_label }}" class="form-label">Role</label>
+                {% render_field form.role class="form-select" %}
+                <div class="invalid-feedback">{{ form.role.errors }}</div>
+            </div>
+
+            {% if not form.instance.pk %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
+                    {% render_field form.password1 class="form-control" %}
+                    <div class="invalid-feedback">{{ form.password1.errors }}</div>
+                    {% if form.password1.help_text %}
+                        <small class="form-text text-muted">{{ form.password1.help_text }}</small>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
+                    {% render_field form.password2 class="form-control" %}
+                    <div class="invalid-feedback">{{ form.password2.errors }}</div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if form.is_active %}
+            <div class="mb-3 form-check">
+                {% render_field form.is_active class="form-check-input" %}
+                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Active</label>
+            </div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary">Save User</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

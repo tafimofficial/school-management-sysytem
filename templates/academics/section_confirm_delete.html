@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Section - SMS{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Delete Section</h1>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-danger">Warning</h6>
+    </div>
+    <div class="card-body">
+        <p>Are you sure you want to delete the section "<strong>{{ object.name }}</strong>" from class "<strong>{{ object.class_name.name }}</strong>"?</p>
+        <p class="text-danger">This action cannot be undone. All students and data associated with this section may be affected.</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Confirm Delete</button>
+            <a href="{% url 'class_list' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

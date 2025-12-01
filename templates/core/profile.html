@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Profile - SMS{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">My Profile</h1>
+</div>
+
+<div class="row">
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card shadow h-100 py-2">
+            <div class="card-body text-center">
+                <img class="img-profile rounded-circle mb-3" src="https://ui-avatars.com/api/?name={{ user.get_full_name }}&background=random" style="width: 100px; height: 100px;">
+                <h4 class="font-weight-bold">{{ user.get_full_name }}</h4>
+                <p class="text-muted">{{ user.get_role_display }}</p>
+                <p class="text-muted small">{{ user.email }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-8 col-md-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Edit Profile</h6>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                            {% render_field form.first_name class="form-control" %}
+                            <div class="invalid-feedback">{{ form.first_name.errors }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                            {% render_field form.last_name class="form-control" %}
+                            <div class="invalid-feedback">{{ form.last_name.errors }}</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                        {% render_field form.email class="form-control" %}
+                        <div class="invalid-feedback">{{ form.email.errors }}</div>
+                    </div>
+                    
+                    {% if user.role == 'STUDENT' %}
+                    <div class="mb-3">
+                        <label for="current_class" class="form-label">Class</label>
+                        <select name="current_class" id="current_class" class="form-select">
+                            <option value="">Select Class</option>
+                            {% for class in classes %}
+                            <option value="{{ class.id }}" {% if student_profile.current_class.id == class.id %}selected{% endif %}>
+                                {{ class.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">Update your class to see relevant exams and schedules.</small>
+                    </div>
+                    {% endif %}
+
+                    <!-- Hidden fields for role and is_active as users shouldn't edit these themselves -->
+                    <div class="d-none">
+                        {% render_field form.role %}
+                        {% render_field form.is_active %}
+                        {% render_field form.username %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

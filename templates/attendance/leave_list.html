@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Leave Applications - SMS{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Leave Applications</h1>
+    <h1 class="h3 mb-0 text-gray-800">Leave Applications</h1>
+    {% if user.role != 'SUPER_ADMIN' and user.role != 'SCHOOL_ADMIN' %}
+    <a href="{% url 'leave_apply' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+        <i class="fas fa-plus fa-sm text-white-50"></i> Apply Leave
+    </a>
+    {% endif %}
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Applicant</th>
+                        <th>Dates</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Status</th>
+                        <th>Applied On</th>
+                        {% if user.role == 'SUPER_ADMIN' or user.role == 'SCHOOL_ADMIN' %}
+                        <th>Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leave in leaves %}
+                    <tr>
+                        <td>{{ leave.user.get_full_name }}</td>
+                        <td>{{ leave.start_date }} to {{ leave.end_date }}</td>
+                        <td>{{ leave.reason|truncatechars:50 }}</td>
+                        <td>
+                            {% if leave.status == 'APPROVED' %}
+                                <span class="badge bg-success">Approved</span>
+                            {% elif leave.status == 'REJECTED' %}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% endif %}
+                        </td>
+                        </td>
+                        <td>{{ leave.created_at|date:"M d, Y" }}</td>
+                        {% if user.role == 'SUPER_ADMIN' or user.role == 'SCHOOL_ADMIN' %}
+                        <td>
+                            {% if leave.status == 'PENDING' %}
+                            <form method="post" action="{% url 'leave_update_status' leave.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="approve">
+                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                            </form>
+                            <form method="post" action="{% url 'leave_update_status' leave.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="reject">
+                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                            </form>
+                            {% else %}
+                            <span class="text-muted">No actions</span>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{% if user.role == 'SUPER_ADMIN' or user.role == 'SCHOOL_ADMIN' %}6{% else %}5{% endif %}" class="text-center">No leave applications found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
