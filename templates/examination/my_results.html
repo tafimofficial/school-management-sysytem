@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}My Results - SMS{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">My Results</h1>
+</div>
+
+{% if exam_results %}
+    {% for exam, results in exam_results.items %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">{{ exam.name }} ({{ exam.academic_year }})</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Marks Obtained</th>
+                            <th>Max Marks</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                        <tr>
+                            <td>{{ result.subject.name }}</td>
+                            <td>{{ result.marks_obtained }}</td>
+                            <td>{{ result.max_marks }}</td>
+                            <td>{{ result.remarks }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-info">
+        No results found.
+    </div>
+{% endif %}
+
+{% endblock %}

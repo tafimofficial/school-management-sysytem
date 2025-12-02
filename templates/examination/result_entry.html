@@ -32,11 +32,9 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Subject</label>
-                    <select name="subject_id" class="form-select" required>
+                    <select name="subject_id" class="form-select" id="subjectSelect" required>
                         <option value="">Select Subject</option>
-                        {% for subject in subjects %}
-                        <option value="{{ subject.id }}">{{ subject.name }}</option>
-                        {% endfor %}
+                        <!-- Populated via JS -->
                     </select>
                 </div>
             </div>
@@ -66,12 +64,24 @@
         const classId = this.value;
         const studentList = document.getElementById('studentList');
         const tbody = document.getElementById('studentTableBody');
-        tbody.innerHTML = ''; // Clear existing rows
-
+        const subjectSelect = document.getElementById('subjectSelect');
+        
         if (classId) {
+            // Fetch Subjects
+            fetch(`{% url 'get_subjects' %}?class_id=${classId}`)
+                .then(response => response.json())
+                .then(data => {
+                    subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+                    data.forEach(subject => {
+                        subjectSelect.insertAdjacentHTML('beforeend', `<option value="${subject.id}">${subject.name}</option>`);
+                    });
+                });
+
+            // Fetch Students
             fetch(`{% url 'get_students' %}?class_id=${classId}`)
                 .then(response => response.json())
                 .then(data => {
+                    tbody.innerHTML = ''; // Clear existing rows inside callback to avoid race conditions
                     if (data.length > 0) {
                         data.forEach(student => {
                             const row = `
@@ -96,6 +106,7 @@
                     }
                 });
         } else {
+            document.getElementById('subjectSelect').innerHTML = '<option value="">Select Subject</option>';
             studentList.style.display = 'none';
             document.querySelector('.alert-info').style.display = 'block';
         }

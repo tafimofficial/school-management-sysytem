@@ -116,8 +116,19 @@
                 <p>You are logged in as <strong>{{ user.get_role_display }}</strong>.</p>
                 {% if role == 'STUDENT' %}
                     <p>Student specific content goes here.</p>
-                {% elif role == 'TEACHER' %}
+                    <a href="{% url 'my_results' %}" class="btn btn-primary">
+                        <i class="fas fa-poll-h me-2"></i> View My Results
+                    </a>
+                {% elif role == 'TEACHER' or role == 'SUPER_ADMIN' or role == 'SCHOOL_ADMIN' %}
                     <p>Teacher specific content goes here.</p>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'result_entry' %}" class="btn btn-primary">
+                            <i class="fas fa-edit me-2"></i> Enter Results
+                        </a>
+                        <a href="{% url 'class_results' %}" class="btn btn-info text-white">
+                            <i class="fas fa-list-alt me-2"></i> View Class Results
+                        </a>
+                    </div>
                 {% endif %}
             </div>
         </div>

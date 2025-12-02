@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Class Results - SMS{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Class Results</h1>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <form method="get" class="row mb-4">
+            <div class="col-md-4">
+                <label class="form-label">Exam</label>
+                <select name="exam_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">Select Exam</option>
+                    {% for exam in exams %}
+                    <option value="{{ exam.id }}" {% if selected_exam_id == exam.id %}selected{% endif %}>{{ exam.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Class</label>
+                <select name="class_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">Select Class</option>
+                    {% for class in classes %}
+                    <option value="{{ class.id }}" {% if selected_class_id == class.id %}selected{% endif %}>{{ class.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+
+        {% if results %}
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Subject</th>
+                        <th>Marks Obtained</th>
+                        <th>Max Marks</th>
+                        <th>Remarks</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                    <tr>
+                        <td>{{ result.student.user.get_full_name }} ({{ result.student.admission_number }})</td>
+                        <td>{{ result.subject.name }}</td>
+                        <td>{{ result.marks_obtained }}</td>
+                        <td>{{ result.max_marks }}</td>
+                        <td>{{ result.remarks }}</td>
+                        <td>
+                            <a href="{% url 'result_edit' result.pk %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'result_delete' result.pk %}" class="btn btn-sm btn-danger">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% elif selected_exam_id and selected_class_id %}
+        <div class="alert alert-info">
+            No results found for the selected exam and class.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
