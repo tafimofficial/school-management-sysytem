@@ -10,7 +10,7 @@ from django.db.models import Q
 
 @login_required
 def exam_list(request):
-    queryset = Exam.objects.all()
+    queryset = Exam.objects.prefetch_related('schedules', 'schedules__subject').all()
     user = request.user
     
     if user.role == User.Role.STUDENT:
@@ -48,7 +48,12 @@ def exam_create(request):
         if form.is_valid() and schedules.is_valid():
             exam = form.save()
             schedules.instance = exam
-            schedules.save()
+            instances = schedules.save(commit=False)
+            for instance in instances:
+                instance.exam_class = exam.exam_class
+                instance.save()
+            for obj in schedules.deleted_objects:
+                obj.delete()
             messages.success(request, 'Exam created successfully.')
             return redirect('exam_list')
     else:
@@ -65,8 +70,13 @@ def exam_update(request, pk):
         schedules = ExamScheduleFormSet(request.POST, instance=exam)
         
         if form.is_valid() and schedules.is_valid():
-            form.save()
-            schedules.save()
+            exam = form.save()
+            instances = schedules.save(commit=False)
+            for instance in instances:
+                instance.exam_class = exam.exam_class
+                instance.save()
+            for obj in schedules.deleted_objects:
+                obj.delete()
             messages.success(request, 'Exam updated successfully.')
             return redirect('exam_list')
     else:
@@ -94,7 +104,10 @@ def schedule_create(request):
     if request.method == 'POST':
         form = ExamScheduleForm(request.POST)
         if form.is_valid():
-            form.save()
+            schedule = form.save(commit=False)
+            if schedule.exam:
+                schedule.exam_class = schedule.exam.exam_class
+            schedule.save()
             messages.success(request, 'Schedule created successfully.')
             return redirect('schedule_list')
     else:

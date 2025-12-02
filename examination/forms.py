@@ -20,11 +20,11 @@ class ExamForm(forms.ModelForm):
 class ExamScheduleForm(forms.ModelForm):
     class Meta:
         model = ExamSchedule
-        fields = ['exam', 'subject', 'exam_class', 'date', 'start_time', 'end_time', 'max_marks']
+        fields = ['exam', 'subject', 'date', 'start_time', 'end_time', 'max_marks']
         widgets = {
             'exam': forms.Select(attrs={'class': 'form-select'}),
             'subject': forms.Select(attrs={'class': 'form-select'}),
-            'exam_class': forms.Select(attrs={'class': 'form-select'}),
+
             'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
             'end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
