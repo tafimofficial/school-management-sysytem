@@ -1,22 +1,21 @@
 from django.urls import path
 from .views import (
-    DashboardView, HomeView, CustomLoginView,
-    UserListView, UserCreateView, UserUpdateView, UserDeleteView,
-    ProfileView, SettingsView
+    dashboard, home, custom_login, custom_logout,
+    user_list, user_create, user_update, user_delete,
+    profile, settings
 )
-from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
-    path('', HomeView.as_view(), name='home'),
-    path('dashboard/', DashboardView.as_view(), name='dashboard'),
-    path('login/', CustomLoginView.as_view(), name='login'),
-    path('logout/', LogoutView.as_view(next_page='home'), name='logout'),
-    path('profile/', ProfileView.as_view(), name='profile'),
-    path('settings/', SettingsView.as_view(), name='settings'),
+    path('', home, name='home'),
+    path('dashboard/', dashboard, name='dashboard'),
+    path('login/', custom_login, name='login'),
+    path('logout/', custom_logout, name='logout'),
+    path('profile/', profile, name='profile'),
+    path('settings/', settings, name='settings'),
     
     # User Management
-    path('users/', UserListView.as_view(), name='user_list'),
-    path('users/create/', UserCreateView.as_view(), name='user_create'),
-    path('users/<int:pk>/edit/', UserUpdateView.as_view(), name='user_update'),
-    path('users/<int:pk>/delete/', UserDeleteView.as_view(), name='user_delete'),
+    path('users/', user_list, name='user_list'),
+    path('users/create/', user_create, name='user_create'),
+    path('users/<int:pk>/edit/', user_update, name='user_update'),
+    path('users/<int:pk>/delete/', user_delete, name='user_delete'),
 ]

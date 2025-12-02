@@ -5,9 +5,11 @@
 {% block content %}
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800">Academic Years</h1>
+    {% if user.role == 'SUPER_ADMIN' or user.role == 'SCHOOL_ADMIN' %}
     <a href="{% url 'academic_year_create' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
         <i class="fas fa-plus fa-sm text-white-50"></i> Add Academic Year
     </a>
+    {% endif %}
 </div>
 
 <div class="card shadow mb-4">

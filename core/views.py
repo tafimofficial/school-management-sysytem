@@ -1,163 +1,176 @@
-from django.shortcuts import render
-from django.utils import timezone
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView
-from django.contrib.auth.views import LoginView
-from django.urls import reverse_lazy
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from .models import User
 from academics.models import Class, Subject
 from .forms import CustomUserCreationForm, CustomUserChangeForm
+from django.utils import timezone
+from django.db.models import Q
+from django.core.paginator import Paginator
 
-class AdminRequiredMixin(UserPassesTestMixin):
-    def test_func(self):
-        return self.request.user.is_authenticated and self.request.user.role in [User.Role.SUPER_ADMIN, User.Role.SCHOOL_ADMIN]
+def is_admin(user):
+    return user.is_authenticated and user.role in [User.Role.SUPER_ADMIN, User.Role.SCHOOL_ADMIN]
 
-class HomeView(TemplateView):
-    template_name = 'home.html'
+def home(request):
+    return render(request, 'home.html')
 
-class CustomLoginView(LoginView):
-    template_name = 'registration/login.html'
-    redirect_authenticated_user = True
-
-class DashboardView(LoginRequiredMixin, TemplateView):
-    template_name = 'dashboard/dashboard.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user = self.request.user
-        context['role'] = user.role
-        
-        if user.role in [User.Role.SUPER_ADMIN, User.Role.SCHOOL_ADMIN]:
-            context['total_users'] = User.objects.count()
-            context['total_students'] = User.objects.filter(role=User.Role.STUDENT).count()
-            context['total_teachers'] = User.objects.filter(role=User.Role.TEACHER).count()
-            context['total_classes'] = Class.objects.count()
-            context['total_subjects'] = Subject.objects.count()
-            context['recent_users'] = User.objects.order_by('-date_joined')[:5]
-        
-        elif user.role == User.Role.TEACHER:
-            # Teacher specific context
-            # Assuming teachers are linked to subjects/classes via TeacherSubjectAssignment or similar
-            # For now, we'll show classes they teach if that relationship exists, or just general info
-            pass
-            
-        elif user.role == User.Role.STUDENT:
-            # Student specific context
-            if hasattr(user, 'student_profile'):
-                context['my_class'] = user.student_profile.current_class
-                context['my_attendance'] = user.student_profile.attendance_records.count()
-            pass
-            
-        return context
-
-# User Management Views
-class UserListView(AdminRequiredMixin, ListView):
-    model = User
-    template_name = 'core/user_list.html'
-    context_object_name = 'users'
-    paginate_by = 20
+def custom_login(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
     
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        role = self.request.GET.get('role')
-        search_query = self.request.GET.get('q')
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                if request.GET.get('next'):
+                    return redirect(request.GET.get('next'))
+                return redirect('dashboard')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'registration/login.html', {'form': form})
+
+def custom_logout(request):
+    logout(request)
+    return redirect('home')
+
+@login_required
+def dashboard(request):
+    user = request.user
+    context = {'role': user.role}
+    
+    if user.role in [User.Role.SUPER_ADMIN, User.Role.SCHOOL_ADMIN]:
+        context['total_users'] = User.objects.count()
+        context['total_students'] = User.objects.filter(role=User.Role.STUDENT).count()
+        context['total_teachers'] = User.objects.filter(role=User.Role.TEACHER).count()
+        context['total_classes'] = Class.objects.count()
+        context['total_subjects'] = Subject.objects.count()
+        context['recent_users'] = User.objects.order_by('-date_joined')[:5]
+    
+    elif user.role == User.Role.TEACHER:
+        pass
         
-        if role:
-            queryset = queryset.filter(role=role)
+    elif user.role == User.Role.STUDENT:
+        if hasattr(user, 'student_profile'):
+            context['my_class'] = user.student_profile.current_class
+            context['my_attendance'] = user.student_profile.attendance_records.count()
             
-        if search_query:
-            queryset = queryset.filter(
-                username__icontains=search_query
-            ) | queryset.filter(
-                first_name__icontains=search_query
-            ) | queryset.filter(
-                last_name__icontains=search_query
-            ) | queryset.filter(
-                email__icontains=search_query
-            )
-            
-        return queryset
+    return render(request, 'dashboard/dashboard.html', context)
 
-class ProfileView(LoginRequiredMixin, UpdateView):
-    model = User
-    form_class = CustomUserChangeForm
-    template_name = 'core/profile.html'
-    success_url = reverse_lazy('profile')
+@login_required
+@user_passes_test(is_admin)
+def user_list(request):
+    queryset = User.objects.all()
+    role = request.GET.get('role')
+    search_query = request.GET.get('q')
+    
+    if role:
+        queryset = queryset.filter(role=role)
+        
+    if search_query:
+        queryset = queryset.filter(
+            Q(username__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains=search_query)
+        )
+        
+    paginator = Paginator(queryset, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'core/user_list.html', {'users': page_obj, 'page_obj': page_obj, 'is_paginated': page_obj.has_other_pages()})
 
-    def get_object(self):
-        return self.request.user
+@login_required
+def profile(request):
+    user = request.user
+    if request.method == 'POST':
+        form = CustomUserChangeForm(request.POST, instance=user)
+        if form.is_valid():
+            if user.role == User.Role.STUDENT:
+                from students.models import Student
+                from academics.models import Class
+                class_id = request.POST.get('current_class')
+                if class_id:
+                    student_profile, created = Student.objects.get_or_create(
+                        user=user,
+                        defaults={
+                            'admission_number': user.username,
+                            'admission_date': timezone.now().date(),
+                            'date_of_birth': timezone.now().date(),
+                            'gender': 'O',
+                            'address': 'Not Provided',
+                        }
+                    )
+                    student_profile.current_class = Class.objects.get(id=class_id)
+                    student_profile.save()
+            form.save()
+            messages.success(request, 'Profile updated successfully.')
+            return redirect('profile')
+    else:
+        form = CustomUserChangeForm(instance=user)
+    
+    context = {'form': form}
+    if user.role == User.Role.STUDENT:
+        from students.models import Student
+        from academics.models import Class
+        student_profile, created = Student.objects.get_or_create(
+            user=user,
+            defaults={
+                'admission_number': user.username,
+                'admission_date': timezone.now().date(),
+                'date_of_birth': timezone.now().date(),
+                'gender': 'O',
+                'address': 'Not Provided',
+            }
+        )
+        context['classes'] = Class.objects.all()
+        context['student_profile'] = student_profile
+        
+    return render(request, 'core/profile.html', context)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.user.role == User.Role.STUDENT:
-            # Import here to avoid circular import
-            from students.models import Student
-            from academics.models import Class
-            student_profile, created = Student.objects.get_or_create(
-                user=self.request.user,
-                defaults={
-                    'admission_number': self.request.user.username,
-                    'admission_date': timezone.now().date(),
-                    'date_of_birth': timezone.now().date(),
-                    'gender': 'O',
-                    'address': 'Not Provided',
-                }
-            )
-            context['classes'] = Class.objects.all()
-            context['student_profile'] = student_profile
-        return context
+@login_required
+def settings(request):
+    return render(request, 'core/settings.html')
 
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        if self.request.user.role == User.Role.STUDENT:
-            from students.models import Student
-            from academics.models import Class
-            class_id = self.request.POST.get('current_class')
-            if class_id:
-                student_profile, created = Student.objects.get_or_create(
-                    user=self.request.user,
-                    defaults={
-                        'admission_number': self.request.user.username,
-                        'admission_date': timezone.now().date(),
-                        'date_of_birth': timezone.now().date(),
-                        'gender': 'O',
-                        'address': 'Not Provided',
-                    }
-                )
-                student_profile.current_class = Class.objects.get(id=class_id)
-                student_profile.save()
-        messages.success(self.request, 'Profile updated successfully.')
-        return response
+@login_required
+@user_passes_test(is_admin)
+def user_create(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'User created successfully.')
+            return redirect('user_list')
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'core/user_form.html', {'form': form})
 
-class SettingsView(LoginRequiredMixin, TemplateView):
-    template_name = 'core/settings.html'
+@login_required
+@user_passes_test(is_admin)
+def user_update(request, pk):
+    user = get_object_or_404(User, pk=pk)
+    if request.method == 'POST':
+        form = CustomUserChangeForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'User updated successfully.')
+            return redirect('user_list')
+    else:
+        form = CustomUserChangeForm(instance=user)
+    return render(request, 'core/user_form.html', {'form': form})
 
-class UserCreateView(AdminRequiredMixin, CreateView):
-    model = User
-    form_class = CustomUserCreationForm
-    template_name = 'core/user_form.html'
-    success_url = reverse_lazy('user_list')
-
-    def form_valid(self, form):
-        messages.success(self.request, 'User created successfully.')
-        return super().form_valid(form)
-
-class UserUpdateView(AdminRequiredMixin, UpdateView):
-    model = User
-    form_class = CustomUserChangeForm
-    template_name = 'core/user_form.html'
-    success_url = reverse_lazy('user_list')
-
-    def form_valid(self, form):
-        messages.success(self.request, 'User updated successfully.')
-        return super().form_valid(form)
-
-class UserDeleteView(AdminRequiredMixin, DeleteView):
-    model = User
-    template_name = 'core/user_confirm_delete.html'
-    success_url = reverse_lazy('user_list')
-
-    def delete(self, request, *args, **kwargs):
-        messages.success(self.request, 'User deleted successfully.')
-        return super().delete(request, *args, **kwargs)
+@login_required
+@user_passes_test(is_admin)
+def user_delete(request, pk):
+    user = get_object_or_404(User, pk=pk)
+    if request.method == 'POST':
+        user.delete()
+        messages.success(request, 'User deleted successfully.')
+        return redirect('user_list')
+    return render(request, 'core/user_confirm_delete.html', {'object': user})

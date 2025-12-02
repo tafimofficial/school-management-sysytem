@@ -10,6 +10,8 @@ class Exam(models.Model):
     end_date = models.DateField()
     is_active = models.BooleanField(default=True)
     description = models.TextField(blank=True)
+    exam_class = models.ForeignKey(Class, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Class')
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.academic_year})"

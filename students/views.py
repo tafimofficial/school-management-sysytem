@@ -1,71 +1,73 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.http import JsonResponse
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse_lazy
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Student
 from .forms import StudentForm
+from django.core.paginator import Paginator
+from django.db.models import Q
 
-class StudentListView(LoginRequiredMixin, ListView):
-    model = Student
-    template_name = 'students/student_list.html'
-    context_object_name = 'students'
-    paginate_by = 10
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        query = self.request.GET.get('q')
-        if query:
-            queryset = queryset.filter(
-                user__first_name__icontains=query
-            ) | queryset.filter(
-                user__last_name__icontains=query
-            ) | queryset.filter(
-                admission_number__icontains=query
-            )
-        return queryset
-
-class StudentDetailView(LoginRequiredMixin, DetailView):
-    model = Student
-    template_name = 'students/student_detail.html'
-    context_object_name = 'student'
-
-class StudentCreateView(LoginRequiredMixin, CreateView):
-    model = Student
-    form_class = StudentForm
-    template_name = 'students/student_form.html'
-    success_url = reverse_lazy('student_list')
-
-    def form_valid(self, form):
-        messages.success(self.request, 'Student created successfully.')
-        return super().form_valid(form)
-
-class StudentUpdateView(LoginRequiredMixin, UpdateView):
-    model = Student
-    form_class = StudentForm
-    template_name = 'students/student_form.html'
-    success_url = reverse_lazy('student_list')
-
-    def get_initial(self):
-        initial = super().get_initial()
-        initial['first_name'] = self.object.user.first_name
-        initial['last_name'] = self.object.user.last_name
-        initial['email'] = self.object.user.email
-        return initial
-
-    def form_valid(self, form):
-        messages.success(self.request, 'Student updated successfully.')
-        return super().form_valid(form)
-
-class StudentDeleteView(LoginRequiredMixin, DeleteView):
-    model = Student
-    template_name = 'students/student_confirm_delete.html'
-    success_url = reverse_lazy('student_list')
+@login_required
+def student_list(request):
+    queryset = Student.objects.all()
+    query = request.GET.get('q')
+    if query:
+        queryset = queryset.filter(
+            Q(user__first_name__icontains=query) |
+            Q(user__last_name__icontains=query) |
+            Q(admission_number__icontains=query)
+        )
     
-    def delete(self, request, *args, **kwargs):
-        messages.success(self.request, 'Student deleted successfully.')
-        return super().delete(request, *args, **kwargs)
+    paginator = Paginator(queryset, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'students/student_list.html', {'students': page_obj, 'page_obj': page_obj, 'is_paginated': page_obj.has_other_pages()})
+
+@login_required
+def student_detail(request, pk):
+    student = get_object_or_404(Student, pk=pk)
+    return render(request, 'students/student_detail.html', {'student': student})
+
+@login_required
+def student_create(request):
+    if request.method == 'POST':
+        form = StudentForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Student created successfully.')
+            return redirect('student_list')
+    else:
+        form = StudentForm()
+    return render(request, 'students/student_form.html', {'form': form})
+
+@login_required
+def student_update(request, pk):
+    student = get_object_or_404(Student, pk=pk)
+    initial = {
+        'first_name': student.user.first_name,
+        'last_name': student.user.last_name,
+        'email': student.user.email
+    }
+    
+    if request.method == 'POST':
+        form = StudentForm(request.POST, request.FILES, instance=student)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Student updated successfully.')
+            return redirect('student_list')
+    else:
+        form = StudentForm(instance=student, initial=initial)
+    return render(request, 'students/student_form.html', {'form': form})
+
+@login_required
+def student_delete(request, pk):
+    student = get_object_or_404(Student, pk=pk)
+    if request.method == 'POST':
+        student.delete()
+        messages.success(request, 'Student deleted successfully.')
+        return redirect('student_list')
+    return render(request, 'students/student_confirm_delete.html', {'object': student})
 
 def get_students(request):
     section_id = request.GET.get('section_id')
@@ -78,7 +80,6 @@ def get_students(request):
     else:
         students = Student.objects.none()
         
-    # Filter out duplicates by name (case-insensitive and stripped) using dict comprehension
     unique_students_map = {}
     for s in students:
         full_name = s.user.get_full_name().strip()

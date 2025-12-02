@@ -1,66 +1,109 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import ListView, CreateView, UpdateView, DetailView, View
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.urls import reverse_lazy
 from .models import Exam, ExamSchedule, Result
-from .forms import ExamForm, ExamScheduleForm, ResultForm
+from .forms import ExamForm, ExamScheduleForm, ResultForm, ExamScheduleFormSet
 from students.models import Student
-from academics.models import Class, Subject
+from academics.models import Class, Subject, Section
 from core.models import User
+from django.db.models import Q
 
-class ExamListView(LoginRequiredMixin, ListView):
-    model = Exam
-    template_name = 'examination/exam_list.html'
-    context_object_name = 'exams'
+@login_required
+def exam_list(request):
+    queryset = Exam.objects.all()
+    user = request.user
+    
+    if user.role == User.Role.STUDENT:
+        if hasattr(user, 'student_profile') and user.student_profile.current_class:
+            queryset = queryset.filter(exam_class=user.student_profile.current_class)
+            queryset = queryset.filter(
+                Q(section__isnull=True) | Q(section=user.student_profile.section)
+            )
+            queryset = queryset.distinct()
+        else:
+            queryset = queryset.none()
+    else:
+        # For Admins/Teachers, allow filtering
+        class_id = request.GET.get('class_id')
+        section_id = request.GET.get('section_id')
+        
+        if class_id:
+            queryset = queryset.filter(exam_class_id=class_id)
+        if section_id:
+            queryset = queryset.filter(section_id=section_id)
+            
+    context = {'exams': queryset}
+    if user.role in [User.Role.SUPER_ADMIN, User.Role.SCHOOL_ADMIN, User.Role.TEACHER]:
+        context['classes'] = Class.objects.all()
+        context['sections'] = Section.objects.all()
+        
+    return render(request, 'examination/exam_list.html', context)
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        user = self.request.user
-        if user.role == User.Role.STUDENT:
-            if hasattr(user, 'student_profile') and user.student_profile.current_class:
-                # Filter exams that have schedules for the student's class
-                return queryset.filter(schedules__exam_class=user.student_profile.current_class).distinct()
-            return queryset.none()
-        return queryset
+@login_required
+def exam_create(request):
+    if request.method == 'POST':
+        form = ExamForm(request.POST)
+        schedules = ExamScheduleFormSet(request.POST)
+        
+        if form.is_valid() and schedules.is_valid():
+            exam = form.save()
+            schedules.instance = exam
+            schedules.save()
+            messages.success(request, 'Exam created successfully.')
+            return redirect('exam_list')
+    else:
+        form = ExamForm()
+        schedules = ExamScheduleFormSet()
+        
+    return render(request, 'examination/exam_form.html', {'form': form, 'schedules': schedules})
 
-class ExamCreateView(LoginRequiredMixin, CreateView):
-    model = Exam
-    form_class = ExamForm
-    template_name = 'examination/exam_form.html'
-    success_url = reverse_lazy('exam_list')
+@login_required
+def exam_update(request, pk):
+    exam = get_object_or_404(Exam, pk=pk)
+    if request.method == 'POST':
+        form = ExamForm(request.POST, instance=exam)
+        schedules = ExamScheduleFormSet(request.POST, instance=exam)
+        
+        if form.is_valid() and schedules.is_valid():
+            form.save()
+            schedules.save()
+            messages.success(request, 'Exam updated successfully.')
+            return redirect('exam_list')
+    else:
+        form = ExamForm(instance=exam)
+        schedules = ExamScheduleFormSet(instance=exam)
+        
+    return render(request, 'examination/exam_form.html', {'form': form, 'schedules': schedules})
 
-    def form_valid(self, form):
-        messages.success(self.request, 'Exam created successfully.')
-        return super().form_valid(form)
+@login_required
+def exam_delete(request, pk):
+    exam = get_object_or_404(Exam, pk=pk)
+    if request.method == 'POST':
+        exam.delete()
+        messages.success(request, 'Exam deleted successfully.')
+        return redirect('exam_list')
+    return render(request, 'examination/exam_confirm_delete.html', {'object': exam})
 
-class ExamScheduleListView(LoginRequiredMixin, ListView):
-    model = ExamSchedule
-    template_name = 'examination/schedule_list.html'
-    context_object_name = 'schedules'
+@login_required
+def schedule_list(request):
+    schedules = ExamSchedule.objects.all()
+    return render(request, 'examination/schedule_list.html', {'schedules': schedules})
 
-class ExamScheduleCreateView(LoginRequiredMixin, CreateView):
-    model = ExamSchedule
-    form_class = ExamScheduleForm
-    template_name = 'examination/schedule_form.html'
-    success_url = reverse_lazy('schedule_list')
+@login_required
+def schedule_create(request):
+    if request.method == 'POST':
+        form = ExamScheduleForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Schedule created successfully.')
+            return redirect('schedule_list')
+    else:
+        form = ExamScheduleForm()
+    return render(request, 'examination/schedule_form.html', {'form': form})
 
-    def form_valid(self, form):
-        messages.success(self.request, 'Schedule created successfully.')
-        return super().form_valid(form)
-
-class ResultEntryView(LoginRequiredMixin, View):
-    template_name = 'examination/result_entry.html'
-
-    def get(self, request):
-        exams = Exam.objects.filter(is_active=True)
-        classes = Class.objects.all()
-        subjects = Subject.objects.all()
-        return render(request, self.template_name, {
-            'exams': exams, 'classes': classes, 'subjects': subjects
-        })
-
-    def post(self, request):
+@login_required
+def result_entry(request):
+    if request.method == 'POST':
         exam_id = request.POST.get('exam_id')
         class_id = request.POST.get('class_id')
         subject_id = request.POST.get('subject_id')
@@ -87,4 +130,9 @@ class ResultEntryView(LoginRequiredMixin, View):
             messages.success(request, 'Results updated successfully.')
             return redirect('result_entry')
             
-        return render(request, self.template_name)
+    exams = Exam.objects.filter(is_active=True)
+    classes = Class.objects.all()
+    subjects = Subject.objects.all()
+    return render(request, 'examination/result_entry.html', {
+        'exams': exams, 'classes': classes, 'subjects': subjects
+    })
